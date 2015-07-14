@@ -1,0 +1,23 @@
+{
+  "name": "bundle-clean",
+  "version": "0.0.0",
+  "description": "Cleans up jspm bundles so they do not require systemjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "bundle",
+    "clean",
+    "jspm",
+    "systemjs"
+  ],
+  "author": "Luke Page",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.1.0",
+    "gulp-mocha": "^2.1.3"
+  }
+}
