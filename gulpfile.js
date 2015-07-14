@@ -1,6 +1,7 @@
 var gulp = require('gulp');
 var babel = require('gulp-babel');
 var mocha = require('gulp-mocha');
+var runSequence = require("run-sequence");
 
 var path = require('path');
 
@@ -21,7 +22,10 @@ gulp.task('watch', function() {
 });
 gulp.task('default', ['watch']);
 
-gulp.task('test', function () {
+gulp.task('test', function(callback) {
+  runSequence('babel', 'mocha', callback);
+});
+gulp.task('mocha', function () {
   return gulp.src(paths.test)
     .pipe(mocha())
     .once('error', function () {
