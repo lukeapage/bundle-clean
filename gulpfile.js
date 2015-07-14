@@ -19,7 +19,7 @@ gulp.task('babel', function () {
     .pipe(gulp.dest(paths.es5));
 });
 gulp.task('watch', function() {
-  gulp.watch(paths.es6, ['babel']);
+  gulp.watch(paths.es6, ['test']);
 });
 gulp.task('default', ['watch']);
 
