@@ -1,4 +1,5 @@
 var gulp = require('gulp');
+require('babel/register');
 var babel = require('gulp-babel');
 var mocha = require('gulp-mocha');
 var runSequence = require("run-sequence");
