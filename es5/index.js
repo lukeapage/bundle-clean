@@ -8,6 +8,7 @@ var _babelCore = require("babel-core");
 function convert(src) {
   return _babelCore.transform(src, {
     whitelist: [],
+    compact: false,
     plugins: [require("./babel-plugin-systemjs-clean")]
   }).code;
 }

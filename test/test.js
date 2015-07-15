@@ -9,7 +9,9 @@ System.register("github:polymer/mutationobservers@0.4.2", ["github:polymer/mutat
   var global = System.global,
       __define = global.define;
   global.define = undefined;
-  module.exports = require("github:polymer/mutationobservers@0.4.2/MutationObserver");
+  if (window.define) {
+    define("mything", function(){});
+  }
   global.define = __define;
   return module.exports;
 });

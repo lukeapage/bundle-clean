@@ -5,28 +5,74 @@ export default function(babel) {
     InVarDecl: false
   };
   return new babel.Transformer('systemjs-clean', {
-    VariableDeclaration: function (node, parent, scope, file) {
-      // look for   var global = System.global,
-      // __define = global.define;
-      if (node.declarations.length === 2) {
-
-        var index = 0, matches = 0;
-        this.traverse({
-          VariableDeclarator: function (node, parent, scope, file) {
-            var pattern = ["System.global", "global.define"][index];
-            if (this.node.init) {
-              if (this.get('init').matchesPattern(pattern)) {
-                matches++;
-              }
-              index++;
-            }
+    Function() {
+      var functionBody = this.get("body");
+      var statements = functionBody.get("body");
+      if (statements.length > 3) {
+        if (statements[0].isVariableDeclaration() && statements[1].isExpressionStatement()) {
+          var declarations = statements[0].get("declarations");
+          if (declarations.length !== 2 || !declarations[0].node.init || !declarations[1].node.init) {
+            return;
           }
-        });
-        if (matches === 2) {
-          this.dangerouslyRemove();
-          // need to remove the next statement...
-          console.dir(this.parent.body[1]);
+          if (!declarations[0].get("init").matchesPattern("System.global") || !declarations[1].get("init").matchesPattern("global.define")) {
+            return;
+          }
+          var assignDefine = statements[1].get("expression");
+          if (!assignDefine.isAssignmentExpression()) {
+            return;
+          }
+          if (!assignDefine.get("left").matchesPattern("global.define")) {
+            return;
+          }
+          var unassignDefineStatement = statements[statements.length - 2];
+          if (!unassignDefineStatement.isExpressionStatement()) {
+            return;
+          }
+          var unassignDefine = statements[1].get("expression");
+          if (!unassignDefine.isAssignmentExpression()) {
+            return;
+          }
+          if (!assignDefine.get("left").matchesPattern("global.define")) {
+            return;
+          }
+          statements[0].dangerouslyRemove();
+          statements[1].dangerouslyRemove();
+          unassignDefineStatement.dangerouslyRemove();
+
+          this.traverse(
+            {
+              MemberExpression() {
+                var object = this.get("object");
+                var globals = ["global", "window"];
+                if (!object.isIdentifier() || globals.indexOf(object.node.name) < 0) {
+                  return;
+                }
+                var property = this.get("property");
+                if (!property.isIdentifier() || property.node.name !== "define") {
+                  return;
+                }
+
+                return babel.types.identifier("undefined");
+              },
+              Identifier() {
+                if (this.node.name !== "define") {
+                  return;
+                }
+                if (babel.types.isMemberExpression(this.parent)) {
+                  return;
+                }
+                return babel.types.identifier("undefined");
+              }
+            }
+          );
         }
+      }
+    },
+    ExpressionStatement(node, parent, scope, file) {
+      // remove "format *" directives
+      var expression = this.get("expression");
+      if (expression.isLiteral() && expression.node.value.indexOf("format") === 0 ) {
+        this.dangerouslyRemove();
       }
     },
     CallExpression: function (node, parent, scope, file) {
@@ -39,7 +85,7 @@ export default function(babel) {
           return babel.types.expressionStatement(transformedExpression);
         }
       } else if (this.get('callee').matchesPattern('System.import')) {
-        throw new Error("System.import is not supported");
+        //throw new Error("System.import is not supported");
       }
     }
   });
